@@ -4,7 +4,6 @@ from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
 
-# Building model (unchanged)
 class Building(models.Model):
     building_code = models.CharField(
         max_length=3, 
@@ -16,7 +15,6 @@ class Building(models.Model):
         return self.building_code
 
 
-# Community Director model (unchanged)
 class CommunityDirector(models.Model):
     pidm = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=255)
@@ -26,7 +24,6 @@ class CommunityDirector(models.Model):
         return self.name
 
 
-# Room model (unchanged except for validation in save method)
 class Room(models.Model):
     room_num = models.IntegerField(primary_key=True)
     building_code = models.ForeignKey(Building, on_delete=models.CASCADE)
@@ -46,13 +43,11 @@ class Room(models.Model):
         return f"{self.building_code.building_code}-{self.room_num}"
 
     def save(self, *args, **kwargs):
-        # Trigger 5: Ensure room number does not exceed building's room capacity
         if self.room_num > self.building_code.num_rooms:
             raise ValidationError(f"Room number {self.room_num} exceeds building capacity of {self.building_code.num_rooms}.")
         super().save(*args, **kwargs)
 
 
-# Student model (unchanged)
 class Student(models.Model):
     stud_ID = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=255)
@@ -60,8 +55,6 @@ class Student(models.Model):
     def __str__(self):
         return self.name
 
-
-# Lease model (unchanged)
 class Lease(models.Model):
     stud_ID = models.ForeignKey(Student, on_delete=models.CASCADE)
     start_date = models.DateField()
@@ -74,8 +67,6 @@ class Lease(models.Model):
     def __str__(self):
         return f"Lease for {self.stud_ID}"
 
-
-# Triggers using Signals
 @receiver(pre_delete, sender=Building)
 def prevent_building_deletion_with_rooms(sender, instance, **kwargs):
     if Room.objects.filter(building_code=instance).exists():

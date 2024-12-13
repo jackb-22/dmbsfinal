@@ -158,16 +158,12 @@
     </style>
 </head>
 <body>
-    <!-- Logout Button -->
     <a href="{% url 'logout' %}" class="logout-button">Logout</a>
-
-    <!-- Header -->
     <div class="header">
         <h2>Welcome, Admin!</h2>
         <p>You can manage buildings, rooms, students, community directors, and leases here.</p>
     </div>
 
-    <!-- Messages -->
     <div class="content">
         {% if messages %}
         <div class="messages">
@@ -177,7 +173,6 @@
         </div>
         {% endif %}
 
-        <!-- Manage Buildings -->
         <h3>Buildings</h3>
         <table id="buildings-table">
             <thead>
@@ -211,7 +206,6 @@
             </tbody>
         </table>
         <br>
-        <!-- Manage Rooms -->
         <h3>Rooms</h3>
         <table id="rooms-table">
             <thead>
@@ -272,7 +266,6 @@
             </tbody>
         </table>
         <br>
-        <!-- Manage Students -->
         <h3>Students</h3>
         <table id="students-table">
             <thead>

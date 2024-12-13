@@ -6,7 +6,6 @@
     <title>Community Director Dashboard</title>
     <link href="https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap" rel="stylesheet">
     <style>
-        /* Global reset */
         * {
             margin: 0;
             padding: 0;
@@ -20,7 +19,7 @@
             flex-direction: column;
             align-items: center;
             background: #f1f3f9;
-            position: relative; /* To make the logout button fixed in position */
+            position: relative;
         }
 
         .header {
@@ -32,12 +31,11 @@
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        /* Logout Button Styling */
         .logout-button {
             position: absolute;
             top: 10px;
             left: 10px;
-            background-color: #e74c3c; /* Red color */
+            background-color: #e74c3c; 
             color: white;
             border: none;
             padding: 15px 30px;
@@ -48,7 +46,7 @@
         }
 
         .logout-button:hover {
-            background-color: #c0392b; /* Darker red on hover */
+            background-color: #c0392b; 
         }
 
         .content {
@@ -121,10 +119,9 @@
     </style>
 </head>
 <body>
-    <!-- Logout Button -->
     <a href="/logout" class="logout-button">Logout</a>
 
-    <!-- Header Section -->
+
     <h2>Welcome, {{ cd_name }}!</h2>
     <h3>Building: {{ building_code }}</h3>
     
@@ -167,7 +164,6 @@
         </tbody>
     </table>
 
-    <!-- Footer Section -->
     <footer class="footer">
         <p>&copy; {{ current_year }} Housing Management System</p>
     </footer>

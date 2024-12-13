@@ -14,27 +14,23 @@ def login_view(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
         
-        # Debugging: Print the values of the inputs
         print(f"Entered username: {username}, Entered password: {password}")
 
-        # Check if the provided credentials are valid for Admin
         if username == "admin" and password == "12345":
             print("Admin login successful")
             request.session['user_type'] = 'admin'
             return redirect('admin_dashboard')
 
-        # Check if the provided credentials match any Community Director
         try:
             cd = CommunityDirector.objects.get(name=username)
-            if cd and cd.pidm == int(password):  # Assuming pidm is used as a password for simplicity
+            if cd and cd.pidm == int(password):  
                 print(f"{username} login successful")
                 request.session['user_type'] = 'cd'
-                request.session['cd_name'] = username  # Optional: store the name to use later
+                request.session['cd_name'] = username  
                 return redirect('cd_dashboard')
         except CommunityDirector.DoesNotExist:
-            pass  # If no match is found, continue to show error
-        
-        # If no valid login is found
+            pass  
+
         print("Invalid username or password")
         messages.error(request, "Invalid username or password.")
         return render(request, 'housingapp/login.html')
@@ -45,42 +41,36 @@ from django.contrib import messages
 from .models import CommunityDirector, Lease, Room, Student
 
 def cd_dashboard(request):
-    # Ensure the user is logged in as a Community Director
-    if request.session.get('user_type') != 'cd':
-        return redirect('login')  # Redirect to login if not logged in as CD
 
-    # Get the Community Director's name from the session
+    if request.session.get('user_type') != 'cd':
+        return redirect('login')  
     cd_name = request.session.get('cd_name')
 
     try:
-        # Fetch the Community Director by name
         cd = CommunityDirector.objects.get(name=cd_name)
         
-        # Fetch the building code for the CD
         building_code = cd.building_code
         
-        # Fetch rooms associated with this building
-        rooms = Room.objects.filter(building_code=building_code, status='open')  # Get open rooms in this building
 
-        # Fetch leases that are currently active in this building
+        rooms = Room.objects.filter(building_code=building_code, status='open')  
+
         leases = Lease.objects.filter(room_num__building_code=building_code)
 
-        # Get the students who have active leases in this building
+
         students_with_leases = [
             {
                 'student': lease.stud_ID,
-                'room_num': lease.room_num.room_num  # Get the room number from the lease
+                'room_num': lease.room_num.room_num 
             }
             for lease in leases
         ]
 
-        # Return the dashboard view with the CD's data
         context = {
             'cd_name': cd_name,
-            'building_code': building_code.building_code,  # Building code from the Building model
+            'building_code': building_code.building_code,
             'rooms': rooms,
             'students_with_leases': students_with_leases,
-            'current_year': 2024  # Or use `datetime.now().year` for the current year
+            'current_year': 2024  
         }
         return render(request, 'housingapp/cd_dashboard.html', context)
     except CommunityDirector.DoesNotExist:
@@ -120,7 +110,6 @@ def admin_dashboard(request):
                 if form_room.is_valid():
                     room = form_room.save(commit=False)
 
-                    # Validate building capacity
                     building = Building.objects.get(building_code=room.building_code.building_code)
                     if room.room_num > building.num_rooms:
                         raise ValidationError(f"Room number {room.room_num} exceeds building capacity of {building.num_rooms}.")
@@ -153,8 +142,7 @@ def admin_dashboard(request):
                 form_lease = LeaseForm(request.POST)
                 if form_lease.is_valid():
                     lease = form_lease.save(commit=False)
-                    
-                    # Trigger for room capacity
+
                     room = lease.room_num
                     num_active_leases = Lease.objects.filter(room_num=room, end_date__gte=request.POST['start_date']).count()
                     if num_active_leases >= room.num_beds:
@@ -167,7 +155,6 @@ def admin_dashboard(request):
                         messages.error(request, f"Error in {field}: {', '.join(errors)}")
 
         except ValidationError as e:
-            # Handle validation errors from triggers and display as messages
             messages.error(request, e.message)
 
     return render(request, 'housingapp/admin_dashboard.html', {
