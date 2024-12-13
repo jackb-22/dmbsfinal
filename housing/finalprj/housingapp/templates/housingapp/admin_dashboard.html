@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap" rel="stylesheet">
+    <style>
+        /* Global reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #f1f3f9;
+        }
+
+        .header {
+            background-color: #ffffff;
+            padding: 10px;
+            text-align: center;
+            font-size: 24px;
+            width: 100%;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .logout-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .logout-button:hover {
+            background-color: #c0392b;
+        }
+
+        .content {
+            padding: 20px;
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .delete-button {
+            padding: 10px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .delete-button:hover {
+            background-color: #c0392b;
+        }
+
+        .add-button {
+            padding: 10px;
+            background-color: #4070f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .add-button:hover {
+            background-color: #0e4bf1;
+        }
+
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            border: 1px solid #ddd;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        a {
+            color: #3498db;
+            text-decoration: none;
+            margin: 0 5px;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Messages */
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .add-row input, .add-row select {
+            width: 90%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .add-row button {
+            padding: 10px;
+            background-color: #4070f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .add-row button:hover {
+            background-color: #0e4bf1;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Logout Button -->
+    <a href="{% url 'logout' %}" class="logout-button">Logout</a>
+
+    <!-- Header -->
+    <div class="header">
+        <h2>Welcome, Admin!</h2>
+        <p>You can manage buildings, rooms, students, community directors, and leases here.</p>
+    </div>
+
+    <!-- Messages -->
+    <div class="content">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Manage Buildings -->
+        <h3>Buildings</h3>
+        <table id="buildings-table">
+            <thead>
+                <tr>
+                    <th>Building Code</th>
+                    <th>Number of Rooms</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for building in buildings %}
+                <tr>
+                    <td>{{ building.building_code }}</td>
+                    <td>{{ building.num_rooms }}</td>
+                    <td>
+                        <form method="POST" action="{% url 'delete_building' building.building_code %}">
+                            {% csrf_token %}
+                            <button type="submit" name="delete_building" class="delete-button">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr class="add-row" id="add-building-row">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <td><input type="text" name="building_code" placeholder="Building Code" required></td>
+                        <td><input type="number" name="num_rooms" placeholder="Number of Rooms" required></td>
+                        <td><button type="submit" name="add_building">Add</button></td>
+                    </form>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <!-- Manage Rooms -->
+        <h3>Rooms</h3>
+        <table id="rooms-table">
+            <thead>
+                <tr>
+                    <th>Room Number</th>
+                    <th>Building</th>
+                    <th>Capacity</th>
+                    <th>Status</th>
+                    <th>CD</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for room in rooms %}
+                <tr>
+                    <td>{{ room.room_num }}</td>
+                    <td>{{ room.building_code }}</td>
+                    <td>{{ room.num_beds }}</td>
+                    <td>{{room.status}}</td>
+                    <td>{{ room.cd }}</td>
+                    <td>
+                        <form method="POST" action="{% url 'delete_room' room.room_num room.building_code %}">
+                            {% csrf_token %}
+                            <button type="submit" name="delete_room" class="delete-button">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr class="add-row" id="add-room-row">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <td><input type="text" name="room_num" placeholder="Room Number" required></td>
+                        <td>
+                            <select name="building_code" required>
+                                {% for building in buildings %}
+                                    <option value="{{ building.building_code }}">{{ building.building_code }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><input type="number" name="num_beds" placeholder="Capacity" required></td>
+                        <td>
+                            <select name="status" required>
+                                <option value="open">Open</option>
+                                <option value="closed">Closed</option>
+                                <option value="unrentable">Unrentable</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select name="cd" required>
+                                {% for cd in cds %}
+                                    <option value="{{ cd.pidm }}">{{ cd.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><button type="submit" name="add_room">Add</button></td>
+                    </form>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <!-- Manage Students -->
+        <h3>Students</h3>
+        <table id="students-table">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.stud_ID }}</td>
+                    <td>{{ student.name }}</td>
+                    <td>
+                        <form method="POST" action="{% url 'delete_student' student.stud_ID %}">
+                            {% csrf_token %}
+                            <button type="submit" name="delete_student" class="delete-button">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr class="add-row" id="add-student-row">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <td><input type="number" name="stud_ID" placeholder="Student ID" required></td>
+                        <td><input type="text" name="name" placeholder="Student Name" required></td>
+                        <td><button type="submit" name="add_student">Add</button></td>
+                    </form>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <h3>Community Directors</h3>
+        <table id="cd-table">
+            <thead>
+                <tr>
+                    <th>PIDM</th>
+                    <th>Name</th>
+                    <th>Building</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cd in cds %}
+                <tr>
+                    <td>{{ cd.pidm }}</td>
+                    <td>{{ cd.name }}</td>
+                    <td>{{ cd.building_code }}</td>
+                    <td>
+                        <form method="POST" action="{% url 'delete_cd' cd.pidm %}">
+                            {% csrf_token %}
+                            <button type="submit" name="delete_cd" class="delete-button">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr class="add-row" id="add-cd-row">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <td><input type="number" name="pidm" placeholder="PIDM" required></td>
+                        <td><input type="text" name="name" placeholder="Name" required></td>
+                        <td>
+                            <select name="building_code" required>
+                                {% for building in buildings %}
+                                    <option value="{{ building.building_code }}">{{ building.building_code }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><button type="submit" name="add_cd" class="add-button">Add</button></td>
+                    </form>
+                </tr>
+            </tbody>            
+        </table>
+        <br>
+        <h3>Lease</h3>
+        <table id="lease-table">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Building & Room</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lease in leases %}
+                <tr>
+                    <td>{{ lease.stud_ID }}</td>
+                    <td>{{lease.room_num}}</td>
+                    <td>{{ lease.start_date }}</td>
+                    <td>{{lease.end_date}}</td>
+                    <td>
+                        <form method="POST" action="{% url 'delete_lease' lease.stud_ID.stud_ID lease.room_num.room_num %}">
+                            {% csrf_token %}
+                            <button type="submit" name="delete_lease" class="delete-button">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr class="add-row" id="add-lease-row">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <td>
+                            <select name="stud_ID" required>
+                                {% for student in students %}
+                                    <option value="{{ student.stud_ID }}">{{ student.stud_ID }} - {{ student.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <select name="room_num" required>
+                                {% for room in rooms %}
+                                    <option value="{{ room.room_num }}">{{ room.room_num }} - {{ room.building_code.building_code }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><input type="date" name="start_date" placeholder="Start Date" required></td>
+                        <td><input type="date" name="end_date" placeholder="End Date" required></td>
+                        <td><button type="submit" name="add_lease">Add</button></td>
+                    </form>
+                </tr>
+            </tbody>
+        </table>                          
+    </div>
+</body>
+</html>
